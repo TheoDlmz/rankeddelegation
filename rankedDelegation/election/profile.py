@@ -156,3 +156,11 @@ class Election(DeleteCacheMixin):
                 dict_power[guru_id] += 1
         max_power = max([dict_power[k] for k in dict_power])
         return max_power
+
+    @cached_property
+    def sum_rank(self):
+        sum_rank = 0
+        for voter in self.list_voters:
+            if len(voter.path_to_guru) > 0:
+                sum_rank += voter.path_to_guru[0]
+        return sum_rank

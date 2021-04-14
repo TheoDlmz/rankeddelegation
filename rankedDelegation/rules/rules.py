@@ -1,4 +1,4 @@
-from rankedDelegation.election.utils import *
+from rankedDelegation.rules.utils import *
 
 
 def naive_BFD(voters):
