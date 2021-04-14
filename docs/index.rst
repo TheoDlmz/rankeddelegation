@@ -8,6 +8,7 @@ Welcome to Ranked Delegation's documentation!
    readme
    installation
    usage
+   tutorial
    reference/index
    contributing
    authors
