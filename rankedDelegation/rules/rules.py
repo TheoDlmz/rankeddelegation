@@ -1,5 +1,5 @@
 from rankedDelegation.rules.utils import *
-
+import numpy as np
 
 def naive_BFD(voters):
     for voter in voters:
@@ -65,6 +65,62 @@ def diffusion(voters):
             if voter.guru is not None:
                 queue.pop(n_queue - 1 - i)
             elif rank == x:
+                voter.set_guru(delegatee.guru, path_to_guru=[rank + 1] + delegatee.path_to_guru)
+                queue.pop(n_queue - 1 - i)
+                next_queue.extend(followers[voter.id])
+        queue.extend(next_queue)
+
+
+def maxsum(voters):
+    gurus = find_gurus(voters)
+    followers = reverse_graph(voters)
+
+    queue = []
+    for g in gurus:
+        queue.extend(followers[g.id])
+        g.set_guru(g)
+
+    while len(queue) > 0:
+        min_sum = min([element[0] + 1 + np.sum(element[2].path_to_guru) for element in queue])
+        n_queue = len(queue)
+        next_queue = []
+        for i, element in enumerate(queue[::-1]):
+            rank, voter, delegatee = element
+            if voter.guru is not None:
+                if np.sum(voter.path_to_guru) == min_sum and voter.path_to_guru[0] > rank:
+                    voter.path_to_guru[0] = rank
+                    voter.guru = delegatee.guru
+                queue.pop(n_queue - 1 - i)
+            elif rank + 1 + np.sum(element[2].path_to_guru) == min_sum:
+                voter.set_guru(delegatee.guru, path_to_guru=[rank + 1] + delegatee.path_to_guru)
+                queue.pop(n_queue - 1 - i)
+                next_queue.extend(followers[voter.id])
+        queue.extend(next_queue)
+
+
+def lexrank(voters):
+    gurus = find_gurus(voters)
+    followers = reverse_graph(voters)
+
+    queue = []
+    for g in gurus:
+        queue.extend(followers[g.id])
+        g.set_guru(g)
+
+    while len(queue) > 0:
+        all_paths = [[element[0] + 1] + element[2].path_to_guru for element in queue]
+        all_paths = [sorted(x)[::-1] for x in all_paths]
+        min_path = min(all_paths)
+        n_queue = len(queue)
+        next_queue = []
+        for i, element in enumerate(queue[::-1]):
+            rank, voter, delegatee = element
+            if voter.guru is not None:
+                if sorted(voter.path_to_guru)[::-1] == min_path and voter.path_to_guru[0] > rank:
+                    voter.path_to_guru[0] = rank
+                    voter.guru = delegatee.guru
+                queue.pop(n_queue - 1 - i)
+            elif sorted([rank + 1] + element[2].path_to_guru)[::-1] == min_path:
                 voter.set_guru(delegatee.guru, path_to_guru=[rank + 1] + delegatee.path_to_guru)
                 queue.pop(n_queue - 1 - i)
                 next_queue.extend(followers[voter.id])

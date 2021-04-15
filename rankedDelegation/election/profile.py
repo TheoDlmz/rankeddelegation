@@ -1,4 +1,5 @@
 from rankedDelegation.utils.cached import DeleteCacheMixin, cached_property
+import numpy as np
 
 
 class Voter:
@@ -164,3 +165,11 @@ class Election(DeleteCacheMixin):
             if len(voter.path_to_guru) > 0:
                 sum_rank += voter.path_to_guru[0]
         return sum_rank
+
+    @cached_property
+    def max_sum(self):
+        max_sum = 0
+        for voter in self.list_voters:
+            if len(voter.path_to_guru) > 0:
+                max_sum = max(max_sum, np.sum(voter.path_to_guru))
+        return max_sum
