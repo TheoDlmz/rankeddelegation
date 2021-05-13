@@ -1,4 +1,5 @@
 from rankedDelegation.utils.cached import DeleteCacheMixin, cached_property
+from rankedDelegation.rules.arborescences import minimalArborescence
 import numpy as np
 
 
@@ -105,11 +106,12 @@ class Election(DeleteCacheMixin):
         voter.set_id(len(self.list_voters))
         self.list_voters.append(voter)
 
-    def attribute_gurus(self, rule):
+    def attribute_gurus(self, rule=None):
         self.delete_cache()
         for voter in self.list_voters:
             voter.reset()
-        rule(self.list_voters)
+        if rule is not None:
+            rule(self)
 
     @cached_property
     def votes(self):
@@ -173,3 +175,39 @@ class Election(DeleteCacheMixin):
             if len(voter.path_to_guru) > 0:
                 max_sum = max(max_sum, np.sum(voter.path_to_guru))
         return max_sum
+
+
+    @cached_property
+    def unpopularity(self):
+        voters = self.list_voters
+
+        tab_voters = []
+        for voter in voters:
+            if voter.guru is not None:
+                tab_voters.append(voter.id)
+
+        sink = -1
+        tab_voters.append(sink)
+
+        tab_edges = []
+        for voter in voters:
+            if voter.vote is not None:
+                tab_edges.append((voter.id, sink, 0))
+
+            elif voter.guru is not None:
+                choice = voter.path_to_guru[0]
+                for j, delegatee in enumerate(voter.delegatees):
+                    if delegatee.id in tab_voters:
+                        rank = 2
+                        if j+1 < choice:
+                            rank = 1
+                        elif j+1 > choice:
+                            rank = 3
+                        tab_edges.append((voter.id, delegatee.id, rank))
+
+        dict_paths, dict_gurus = minimalArborescence(tab_edges, tab_voters)
+        total = 0
+        for k in dict_paths:
+            if len(dict_paths[k]) > 0:
+                total += dict_paths[k][0] - 2
+        return -total

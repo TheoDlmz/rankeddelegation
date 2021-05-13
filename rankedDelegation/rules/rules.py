@@ -1,7 +1,9 @@
 from rankedDelegation.rules.utils import *
 import numpy as np
 
-def naive_BFD(voters):
+
+def naive_BFD(election):
+    voters = election.list_voters
     for voter in voters:
         if voter.vote is not None:
             voter.set_guru(voter)
@@ -24,7 +26,8 @@ def naive_BFD(voters):
                             queue.append((path + [i + 1], delegatee))
 
 
-def naive_DFD(voters):
+def naive_DFD(election):
+    voters = election.list_voters
     for voter in voters:
         if voter.vote is not None:
             voter.set_guru(voter)
@@ -47,7 +50,8 @@ def naive_DFD(voters):
                             queue.append((path + [len(curr.delegatees) - i], delegatee))
 
 
-def diffusion(voters):
+def diffusion(election):
+    voters = election.list_voters
     gurus = find_gurus(voters)
     followers = reverse_graph(voters)
 
@@ -71,7 +75,8 @@ def diffusion(voters):
         queue.extend(next_queue)
 
 
-def maxsum(voters):
+def minsum(election):
+    voters = election.list_voters
     gurus = find_gurus(voters)
     followers = reverse_graph(voters)
 
@@ -98,7 +103,8 @@ def maxsum(voters):
         queue.extend(next_queue)
 
 
-def lexrank(voters):
+def lexrank(election):
+    voters = election.list_voters
     gurus = find_gurus(voters)
     followers = reverse_graph(voters)
 
