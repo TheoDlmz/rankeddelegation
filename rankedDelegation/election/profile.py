@@ -123,6 +123,22 @@ class Election(DeleteCacheMixin):
         return votes_list
 
     @cached_property
+    def isolated_voters(self):
+        count = 0
+        for voter in self.list_voters:
+            if voter.guru is None:
+                count += 1
+        return count
+
+    @cached_property
+    def abstaining_voters(self):
+        count = 0
+        for voter in self.list_voters:
+            if (voter.vote is None) and (len(voter.delegatees) == 0):
+                count +=1
+        return count
+
+    @cached_property
     def results(self):
         votes = self.votes
         count = [[votes.count(x), x] for x in set(votes)]
@@ -142,14 +158,23 @@ class Election(DeleteCacheMixin):
         return max_rank
 
     @cached_property
-    def max_length(self):
-        max_length = 0
+    def list_lengths(self):
+        list_l = []
         for voter in self.list_voters:
-            max_length = max(max_length, len(voter.path_to_guru))
-        return max_length
+            if len(voter.path_to_guru) > 0:
+                list_l.append(len(voter.path_to_guru))
+        return list_l
 
     @cached_property
-    def max_power(self):
+    def max_length(self):
+        return np.max(self.list_lengths)
+
+    @cached_property
+    def mean_length(self):
+        return np.mean(self.list_lengths)
+
+    @cached_property
+    def list_powers(self):
         dict_power = {}
         for voter in self.list_voters:
             if voter.guru is not None:
@@ -157,16 +182,37 @@ class Election(DeleteCacheMixin):
                 if guru_id not in dict_power:
                     dict_power[guru_id] = 0
                 dict_power[guru_id] += 1
-        max_power = max([dict_power[k] for k in dict_power])
-        return max_power
+        return  list(dict_power.values())
+
+    @cached_property
+    def max_power(self):
+        return np.max(self.list_powers)
+
+    @cached_property
+    def power_entropy(self):
+        s = 0
+        list_p = self.list_powers
+        total_power = np.sum(list_p)
+        for p in list_p:
+            proba = p/total_power
+            s -= proba*np.log(proba)
+        return s
+
+    @cached_property
+    def list_ranks(self):
+        list_r = []
+        for voter in self.list_voters:
+            if len(voter.path_to_guru) > 0:
+                list_r.append(voter.path_to_guru[0])
+        return list_r
 
     @cached_property
     def sum_rank(self):
-        sum_rank = 0
-        for voter in self.list_voters:
-            if len(voter.path_to_guru) > 0:
-                sum_rank += voter.path_to_guru[0]
-        return sum_rank
+        return np.sum(self.list_ranks)
+
+    @cached_property
+    def avg_rank(self):
+        return np.mean(self.list_ranks)
 
     @cached_property
     def max_sum(self):
@@ -176,6 +222,13 @@ class Election(DeleteCacheMixin):
                 max_sum = max(max_sum, np.sum(voter.path_to_guru))
         return max_sum
 
+    @cached_property
+    def total_votes(self):
+        return np.sum(self.list_powers)
+
+    @cached_property
+    def max_representation(self):
+        return self.max_power/self.total_votes
 
     @cached_property
     def unpopularity(self):

@@ -1,4 +1,16 @@
 def find_gurus(voters):
+    """
+    This function creates a list of the guru's in the given voter list.
+    Parameters
+    ----------
+    voters: list
+        The voter list.
+    Return
+    ----------
+    list
+        A list of the guru's in the voter list.
+
+    """
     guru_list = []
     for voter in voters:
         if voter.vote is not None:
