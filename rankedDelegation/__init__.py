@@ -6,4 +6,6 @@ __version__ = '0.1.0'
 
 
 from rankedDelegation.election.profile import *
+from rankedDelegation.election.synthetic import *
+from rankedDelegation.election.vis import *
 import rankedDelegation.rules as rules

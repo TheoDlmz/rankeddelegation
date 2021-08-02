@@ -1,11 +1,32 @@
 import numpy as np
 import pulp
-from rankedDelegation.rules.rules import lexrank
+from rankedDelegation.rules.rules import lexiMax
 np.random.seed(42)
 
 
-def minimalArborescence(tab_edges, tab_voters):
-    prob = pulp.LpProblem("Minimal_Arborescence", pulp.LpMinimize)
+def LPArborescence(tab_edges, tab_voters):
+    """
+    This function compute the minimal arborescence of a network instance given as parameter
+
+    Parameters
+    ----------
+    tab_edges: list
+        List of edges of the network with triplet of the form (int, int, int) with id of start node, id
+        of end node, and weight of the edge
+
+    tab_voters: int list
+        The list of voters
+
+    Returns
+    -------
+    dict_paths
+        The dict of delegation path of each voter
+    dict_guru
+        The dict of guru of each voter
+
+    """
+
+    prob = pulp.LpProblem("Borda_Arborescence", pulp.LpMinimize)
 
     X = [pulp.LpVariable("x_%i" % i, 0, 1, cat='Integer') for i in range(len(tab_edges))]
 
@@ -100,8 +121,20 @@ def minimalArborescence(tab_edges, tab_voters):
     return dict_paths, dict_gurus
 
 
-def minSumRank(election):
-    election.attribute_gurus(lexrank)
+def bordaArb(election):
+    """
+    This function apply the borda Arborescence rule for delegation
+
+    Parameters
+    ----------
+    election
+
+    Returns
+    -------
+    None
+
+    """
+    election.attribute_gurus(lexiMax)
 
     voters = election.list_voters
 
@@ -123,7 +156,7 @@ def minSumRank(election):
                 if delegatee.id in tab_voters:
                     tab_edges.append((voter.id, delegatee.id, j + 1))
 
-    dict_paths, dict_gurus = minimalArborescence(tab_edges, tab_voters)
+    dict_paths, dict_gurus = LPArborescence(tab_edges, tab_voters)
 
     for k in dict_paths:
         voters[k].set_guru(voters[dict_gurus[k]], dict_paths[k])

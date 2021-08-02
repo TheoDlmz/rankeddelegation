@@ -2,7 +2,19 @@ from rankedDelegation.rules.utils import *
 import numpy as np
 
 
-def naive_BFD(election):
+def breadthFirst(election):
+    """
+    This function is used for the BFD rule for delegation
+
+    Parameters
+    ----------
+    election
+
+    Returns
+    -------
+    None
+
+    """
     voters = election.list_voters
     for voter in voters:
         if voter.vote is not None:
@@ -26,7 +38,19 @@ def naive_BFD(election):
                             queue.append((path + [i + 1], delegatee))
 
 
-def naive_DFD(election):
+def depthFirst(election):
+    """
+    This function is used for the DFD rule for delegation
+
+    Parameters
+    ----------
+    election
+
+    Returns
+    -------
+    None
+
+    """
     voters = election.list_voters
     for voter in voters:
         if voter.vote is not None:
@@ -51,6 +75,18 @@ def naive_DFD(election):
 
 
 def diffusion(election):
+    """
+    This function is used for the diffusion algorithm for delegations
+
+    Parameters
+    ----------
+    election
+
+    Returns
+    -------
+    None
+
+    """
     voters = election.list_voters
     gurus = find_gurus(voters)
     followers = reverse_graph(voters)
@@ -75,7 +111,19 @@ def diffusion(election):
         queue.extend(next_queue)
 
 
-def minsum(election):
+def minSum(election):
+    """
+    This function is used for the minSum rule for delegation
+
+    Parameters
+    ----------
+    election
+
+    Returns
+    -------
+    None
+
+    """
     voters = election.list_voters
     gurus = find_gurus(voters)
     followers = reverse_graph(voters)
@@ -103,7 +151,19 @@ def minsum(election):
         queue.extend(next_queue)
 
 
-def lexrank(election):
+def lexiMax(election):
+    """
+    This function is used for the lexiMax rule with lexicographical tie breaking for delegations
+
+    Parameters
+    ----------
+    election
+
+    Returns
+    -------
+    None
+
+    """
     voters = election.list_voters
     gurus = find_gurus(voters)
     followers = reverse_graph(voters)
@@ -121,17 +181,6 @@ def lexrank(election):
         next_queue = []
         for i, element in enumerate(queue[::-1]):
             rank, voter, delegatee = element
-            """
-            if voter.guru is not None:
-                if sorted(voter.path_to_guru)[::-1] == min_path and voter.path_to_guru[0] > rank:
-                    voter.path_to_guru[0] = rank
-                    voter.guru = delegatee.guru
-                queue.pop(n_queue - 1 - i)
-            elif sorted([rank + 1] + element[2].path_to_guru)[::-1] == min_path:
-                voter.set_guru(delegatee.guru, path_to_guru=[rank + 1] + delegatee.path_to_guru)
-                queue.pop(n_queue - 1 - i)
-                next_queue.extend(followers[voter.id])
-            """
             if sorted([rank + 1] + element[2].path_to_guru)[::-1] == min_path:
                 if voter.guru is not None:
                     if sorted(voter.path_to_guru)[::-1] == min_path and voter.path_to_guru[0] > rank:
@@ -146,7 +195,7 @@ def lexrank(election):
 
         queue.extend(next_queue)
 
-
+"""
 def lexrank_ftb(election):
     voters = election.list_voters
     gurus = find_gurus(voters)
@@ -183,6 +232,7 @@ def lexrank_ftb(election):
         queue.extend(next_queue)
 
 
+
 def order_count(p):
     n = len(p)
     vec = np.zeros(n)
@@ -195,3 +245,4 @@ def order_count(p):
         vec[order[n-1-i]] = count_vec[:k].sum()
 
     return vec
+"""

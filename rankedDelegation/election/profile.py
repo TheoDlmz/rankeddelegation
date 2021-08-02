@@ -1,5 +1,5 @@
 from rankedDelegation.utils.cached import DeleteCacheMixin, cached_property
-from rankedDelegation.rules.arborescences import minimalArborescence
+from rankedDelegation.rules.arborescences import LPArborescence
 import numpy as np
 
 
@@ -25,6 +25,10 @@ class Voter:
     id
         The id of the voter
 
+    Examples
+    --------
+    >>> voters = [Voter() for _ in range(5)]
+    >>> voters[0].delegate([voters[i] for i in [2,4,3]]).delegatees
     """
     def __init__(self, vote=None):
         self.vote = vote
@@ -99,14 +103,48 @@ class Voter:
 
 
 class Election(DeleteCacheMixin):
+    """
+    This class run an election with liquid democracy
+
+    Attributes
+    ----------
+    list_voters: list
+        The list of the voters
+    """
     def __init__(self):
         self.list_voters = []
 
     def add_voter(self, voter):
+        """
+        Add one voter to the election
+
+        Parameters
+        ----------
+        voter: Voter
+            The voter to add
+
+        Returns
+        -------
+        None
+
+        """
         voter.set_id(len(self.list_voters))
         self.list_voters.append(voter)
 
     def attribute_gurus(self, rule=None):
+        """
+        Attribute gurus to voters with some rule
+
+        Parameters
+        ----------
+        rule: function
+            The rule to use to attibute gurus to voters
+
+        Returns
+        -------
+            None
+
+        """
         self.delete_cache()
         for voter in self.list_voters:
             voter.reset()
@@ -115,6 +153,15 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def votes(self):
+        """
+        Get the results of the election as a list of voters
+
+        Returns
+        -------
+        list
+            The list of votes
+
+        """
         votes_list = []
         for voter in self.list_voters:
             if voter.guru is None:
@@ -124,6 +171,14 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def isolated_voters(self):
+        """
+        Count the number of isolated voters, i.e. voters that cannot reach any guru.
+
+        Returns
+        -------
+        int
+            The number of isolated voters
+        """
         count = 0
         for voter in self.list_voters:
             if voter.guru is None:
@@ -132,6 +187,16 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def abstaining_voters(self):
+        """
+        Count the number of abstaining voters, i.e. voters that do not indicates any vote
+        or delegatees
+
+        Returns
+        -------
+        int
+            The number of abstaining voters
+
+        """
         count = 0
         for voter in self.list_voters:
             if (voter.vote is None) and (len(voter.delegatees) == 0):
@@ -140,17 +205,44 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def results(self):
+        """
+        Return the results of the election
+
+        Returns
+        -------
+        list
+            List with pairs (score, value)
+
+        """
         votes = self.votes
         count = [[votes.count(x), x] for x in set(votes)]
         return count
 
     @cached_property
     def winner(self):
+        """
+        Return the winner of the election
+
+        Returns
+        -------
+        Object
+            The winner of the election
+
+        """
         results = self.results
         return max(results)[1]
 
     @cached_property
     def max_rank(self):
+        """
+        compute the maximal rank over all paths in the delegation graph
+
+        Returns
+        -------
+        int
+            The maximal rank
+
+        """
         max_rank = 0
         for voter in self.list_voters:
             if len(voter.path_to_guru) > 0:
@@ -159,6 +251,15 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def list_lengths(self):
+        """
+        Compute the list of all lengths of delegation paths
+
+        Returns
+        -------
+        int list
+            The list of delegation paths lengths
+
+        """
         list_l = []
         for voter in self.list_voters:
             if len(voter.path_to_guru) > 0:
@@ -167,14 +268,41 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def max_length(self):
+        """
+        Compute the maximal length of delegation path
+
+        Returns
+        -------
+        int
+            The maximal length
+
+        """
         return np.max(self.list_lengths)
 
     @cached_property
     def mean_length(self):
+        """
+        Compute the average length of delegation path
+
+        Returns
+        -------
+        int
+            The average length
+
+        """
         return np.mean(self.list_lengths)
 
     @cached_property
     def list_powers(self):
+        """
+        Compute the list of gurus powers (i.e. the weight of each guru)
+
+        Returns
+        -------
+        int list
+            The list of gurus power
+
+        """
         dict_power = {}
         for voter in self.list_voters:
             if voter.guru is not None:
@@ -186,10 +314,28 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def max_power(self):
+        """
+        Compute the maximal power of a guru
+
+        Returns
+        -------
+        int
+            The maximal amount of power of a guru
+
+        """
         return np.max(self.list_powers)
 
     @cached_property
     def power_entropy(self):
+        """
+        Compute the power entropy of the gurus
+
+        Returns
+        -------
+        float
+            The power entropy
+
+        """
         s = 0
         list_p = self.list_powers
         total_power = np.sum(list_p)
@@ -200,6 +346,15 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def list_ranks(self):
+        """
+        Compute the list of ranks for an arborescence
+
+        Returns
+        -------
+        int list
+            The list of all ranks
+
+        """
         list_r = []
         for voter in self.list_voters:
             if len(voter.path_to_guru) > 0:
@@ -208,14 +363,41 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def sum_rank(self):
+        """
+        Compute the sum of all ranks for arborescences
+
+        Returns
+        -------
+        int
+            The sum of all ranks
+
+        """
         return np.sum(self.list_ranks)
 
     @cached_property
     def avg_rank(self):
+        """
+        Compute the average rank in an arborescence
+
+        Returns
+        -------
+        float
+            The average rank
+
+        """
         return np.mean(self.list_ranks)
 
     @cached_property
     def max_sum(self):
+        """
+        Compute the maximal sum of rank in one delegation path
+
+        Returns
+        -------
+        int
+            Maximal sum of rank
+
+        """
         max_sum = 0
         for voter in self.list_voters:
             if len(voter.path_to_guru) > 0:
@@ -224,14 +406,39 @@ class Election(DeleteCacheMixin):
 
     @cached_property
     def total_votes(self):
+        """
+        Compute the number of non-isolated voters in the election
+
+        Returns
+        -------
+        int
+            The number of voters
+
+        """
         return np.sum(self.list_powers)
 
     @cached_property
     def max_representation(self):
+        """
+        Compute the maximal fraction of voters that a guru represents.
+
+        Returns
+        -------
+        float
+            The maximal fraction of voter that a guru represent
+        """
         return self.max_power/self.total_votes
 
     @cached_property
     def unpopularity(self):
+        """
+        Compute the unpopularity of an arborescence
+
+        Returns
+        -------
+        int
+            The unpopularity of the arborescence
+        """
         voters = self.list_voters
 
         tab_voters = []
@@ -258,7 +465,7 @@ class Election(DeleteCacheMixin):
                             rank = 3
                         tab_edges.append((voter.id, delegatee.id, rank))
 
-        dict_paths, dict_gurus = minimalArborescence(tab_edges, tab_voters)
+        dict_paths, dict_gurus = LPArborescence(tab_edges, tab_voters)
         total = 0
         for k in dict_paths:
             if len(dict_paths[k]) > 0:
