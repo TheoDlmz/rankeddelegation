@@ -19,6 +19,20 @@ def find_gurus(voters):
 
 
 def reverse_graph(voters):
+    """
+    This function return the set of in-neighbours of every node in a delegation graph
+
+    Parameters
+    ----------
+    voters: a list of Voter
+
+    Returns
+    -------
+    dict
+        A dict containing the list of the in-neighbours of every node in
+        a delegation graph, with the rank of each edge.
+
+    """
     followers = {}
     for voter in voters:
         followers[voter.id] = []

@@ -123,7 +123,8 @@ def LPArborescence(tab_edges, tab_voters):
 
 def bordaArb(election):
     """
-    This function apply the borda Arborescence rule for delegation
+    This function apply the BordaBranching rule for delegation, which returns
+    the branching minimizing the sum of all ranks.
 
     Parameters
     ----------

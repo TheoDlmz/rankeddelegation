@@ -2,9 +2,9 @@ from rankedDelegation.election.profile import Election, Voter
 import numpy as np
 
 
-def election_popularity(n_voters=1000, p_casting=0.2, n_delegatees=4, popularity_factor=1):
+def election_prominence(n_voters=1000, p_casting=0.2, n_delegatees=4, popularity_factor=1):
     """
-    Create a synthetic delegation network with the popularity-based model. In this model, we
+    Create a synthetic delegation network with the prominence-based method. In this method, we
     add edges one by one and we delegates with higher probability to voters who have already a lot
     of support (rich get richer principle)
 
@@ -69,7 +69,7 @@ def election_popularity(n_voters=1000, p_casting=0.2, n_delegatees=4, popularity
 
 def election_friendship(n_voters=1000, p_casting=0.2, n_friends=4, friends_factor=1):
     """
-    Create a synthetic delegation network with the friendship-based model. In this model, first
+    Create a synthetic delegation network with the friendship-based method. In this method, first
     create a network with G(n,p) model then we attribute delegatees with probability based on the
     number of common friends.
 
@@ -150,7 +150,7 @@ def matrix_dist(pos):
 
 def election_spatial(n_voters=1000, p_casting=0.8, n_delegatees=4, distrib_x="gauss", distrib_y="gauss"):
     """
-    Create a synthetic delegation network with the spatial model. In this model, first we put every voter
+    Create a synthetic delegation network with the spatial method. In this method, first we put every voter
     on a 2D plane, then each delegating voter delegates to the voters the closest to him.
 
     Parameters
